@@ -2,4 +2,45 @@
 # The logic to start up your application should be put in this
 # script. The application will work only if it binds to
 # $OPENSHIFT_DIY_IP:8080
-nohup $OPENSHIFT_REPO_DIR/diy/testrubyserver.rb $OPENSHIFT_DIY_IP $OPENSHIFT_REPO_DIR/diy |& /usr/bin/logshifter -tag diy &
+
+# Install Java
+$OPENSHIFT_REPO_DIR/bin/java_setup.sh
+
+# Install Baasbox
+$OPENSHIFT_REPO_DIR/bin/baasbox_setup.sh
+
+# Force stop application just in case
+BASEDIR=$(dirname $0)
+$BASEDIR/stop
+rm $OPENSHIFT_REPO_DIR/{RUNNING_PID,logs/application.log} &> /dev/null
+
+# Dump database if required
+if [ -f $OPENSHIFT_DATA_DIR/baasbox/.dbinit ]; then
+  rm -fr $OPENSHIFT_DATA_DIR/db
+fi
+
+# Start application
+export JAVA_HOME=$OPENSHIFT_DATA_DIR/java
+export PATH=$JAVA_HOME/bin/:$PATH
+nohup java -Dorient.baasbox.path=$OPENSHIFT_DATA_DIR/db         \
+           -Dorient.baasbox.admin_password=admin                \
+           -Dapplication.code=1234567890                        \
+           -Dhttp.port=$OPENSHIFT_DIY_PORT                      \
+           -Dhttp.address=$OPENSHIFT_DIY_IP $*                  \
+           -cp "$OPENSHIFT_DATA_DIR/baasbox/lib/*"              \
+           play.core.server.NettyServer $OPENSHIFT_REPO_DIR     \
+           $OPENSHIFT_DIY_LOG_DIR/baasbox.log &
+
+# Initialize database if required
+if [ -f $OPENSHIFT_DATA_DIR/baasbox/.dbinit ]; then
+  grep -q "Listening for HTTP on" $OPENSHIFT_REPO_DIR/logs/application.log &> /dev/null
+  while [ ! $? -eq 0 ]; do
+    sleep 5
+    grep -q "Listening for HTTP on" $OPENSHIFT_REPO_DIR/logs/application.log &> /dev/null
+  done
+
+  cd $OPENSHIFT_REPO_DIR/misc
+  sleep 5
+  ./database-init.sh
+  rm -fr $OPENSHIFT_DATA_DIR/baasbox/.dbinit
+fi
