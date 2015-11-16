@@ -36,10 +36,11 @@ If you want to dump your database you can run next command from your console:
 $ rhc ssh baasbox 'touch app-root/data/baasbox/.dbinit
 ```
 
-Then restart your application or push new changes to repository to re-initialize it:
+Then restart your application to re-initialize it:
 ```sh
 $ rhc app restart baasbox
 ```
+Or push new changes to repository:
 ```sh
 $ git push
 ```
