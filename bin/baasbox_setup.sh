@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Baasbox 0.9.4
-URL="http://www.baasbox.com/?wpdmact=process&did=NTIuaG90bGluaw=="
+# Baasbox 0.9.5
+URL="http://www.baasbox.com/?wpdmact=process&did=NTUuaG90bGluaw=="
 
 cd $OPENSHIFT_DATA_DIR
 
