@@ -33,7 +33,7 @@ Database will be initialized when BaasBox is installed by default.
 
 If you want to dump your database you can run next command from your console:
 ```sh
-$ rhc ssh baasbox 'touch app-root/data/baasbox/.dbinit
+$ rhc ssh baasbox 'touch app-root/data/baasbox/.dbinit' 
 ```
 
 Then restart your application to re-initialize it:
